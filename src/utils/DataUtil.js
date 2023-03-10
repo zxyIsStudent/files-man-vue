@@ -7,7 +7,7 @@ import { ElLoading } from 'element-plus'
 
 
 const service = axios.create({
-    baseURL: 'http://192.168.7.181:8081/', //地址
+    baseURL: 'http://192.168.1.11:8081/', //地址
 });
 service.interceptors.request.use(
     (config) => {

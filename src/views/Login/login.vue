@@ -2,7 +2,8 @@
   <div class="header">
     <div class="padding">
 
-
+      <el-input-number v-model="userForm.form.userId" :step="2" />
+          <el-button size="small" type="primary" :onClick="search">后四位搜索</el-button>
       <el-upload
           class="upload-demo"
           multiple
@@ -16,6 +17,8 @@
         >
           <el-button size="small" type="primary">上传图片</el-button>
         </el-upload>
+          
+
        <div class="imgList">
          <div  v-for="(item,index) in userForm.imgData" :key="index">
           <el-image :src="item.imgUrl" alt="" style="width:100px;height: 100px;margin-left: 20px;"
@@ -43,6 +46,7 @@ import {reactive} from 'vue'
 import { getImgPages } from '../../utils/Api';
 import { uploads } from '../../utils/Api';;
 import {onMounted} from 'vue'
+import { ElNotification } from 'element-plus'
 
 export default {
   name: "login",
@@ -52,7 +56,9 @@ export default {
     form:{
       pageNum: 1,
       pageSize: 10,
+      userId:0,
     },
+    
     collectPath:'/Users/zhaoxiangyuan/Downloads',
     total: 0,
     imgList:[],
@@ -75,6 +81,15 @@ export default {
         userForm.total=ref.total
         userForm.form.pageNum=ref.current
         userForm.form.pageSize=ref.size
+
+
+        if(ref.code==500){
+          ElNotification({
+            title: 'Error',
+            message: ref.msg,
+            type: 'error',
+          })
+        }
     })
    }
    onMounted(()=>{
@@ -82,6 +97,7 @@ export default {
      getPage()
    
    })
+
    const getPageNum = (num) => {
     userForm.form.pageNum=num;
      getPage()
@@ -114,8 +130,16 @@ export default {
       // }
        let formData = new FormData();
        formData.append("file", file);
-
-       uploads(formData);
+       formData.append("userId", userForm.form.userId);
+       uploads(formData).then(a=>{
+        if(ref.code==500){
+          ElNotification({
+            title: 'Error',
+            message: ref.msg,
+            type: 'error',
+          })
+        }
+       });
 
       console.log("上传完成======》"+file)
    }
@@ -125,16 +149,20 @@ export default {
 	      const file = document.getElementById('file')
 	      file.click()
 	    }
-      const  fileChange= (e) => {
-	      try {
-	        const fu = document.getElementById('file')
-	        if (fu === null) return
-	        // 只有electro可以获取到文件夹路径
-	        this.form.collectPath = fu.files[0].path.replaceAll('\\', '/')
-	      } catch (error) {
-	        console.debug('choice file err:', error)
-	      }
-	    }
+    const  fileChange= (e) => {
+      try {
+        const fu = document.getElementById('file')
+        if (fu === null) return
+        // 只有electro可以获取到文件夹路径
+        this.form.collectPath = fu.files[0].path.replaceAll('\\', '/')
+      } catch (error) {
+        console.debug('choice file err:', error)
+      }
+    }
+    const  search=()=>{
+      console.log("searchsearch======》"+userForm.form.userId)
+      getPage()
+    }
 
    return {
       SrcList,
@@ -143,7 +171,7 @@ export default {
       getPageNum,
       beforeAvatarUpload,
       handleAvatarSuccess,
-      handleOpenMenu,fileChange
+      handleOpenMenu,fileChange,search
    }
  },
 };
